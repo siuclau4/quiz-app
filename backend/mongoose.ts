@@ -1,12 +1,10 @@
 import { Schema, model, connect } from "mongoose";
 import fetch from "node-fetch";
-
-// type result = Array<{
-//   category: string;
-//   score: number;
-// }>;
+import { hashPassword } from "./hash";
+require("dotenv").config();
 
 export interface IUser {
+  _id?: string;
   name: string;
   password: string;
   result: Array<{
@@ -58,9 +56,79 @@ run().catch((err) => console.log(err));
 
 async function run(): Promise<void> {
   // Connect to MongoDB
-  await connect("mongodb://localhost:27017/quiz");
+  await connect(`mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/quiz`);
 
   const quiz = await QuizModel.find();
+
+  const demoUser = await UserModel.find({ name: "demouser" });
+
+  if (demoUser.length === 0) {
+    const password = await hashPassword("1234");
+    const userDoc = new UserModel({
+      name: "demouser",
+      password,
+      result: [
+        {
+          category: "General Knowledge",
+          score: 66,
+        },
+        {
+          category: "General Knowledge",
+          score: 66,
+        },
+        {
+          category: "General Knowledge",
+          score: 100,
+        },
+        {
+          category: "General Knowledge",
+          score: 0,
+        },
+        {
+          category: "Sports",
+          score: 100,
+        },
+        {
+          category: "Sports",
+          score: 66,
+        },
+        {
+          category: "Sports",
+          score: 100,
+        },
+        {
+          category: "Sports",
+          score: 100,
+        },
+        {
+          category: "Sports",
+          score: 100,
+        },
+        {
+          category: "Sports",
+          score: 66,
+        },
+        {
+          category: "History",
+          score: 0,
+        },
+        {
+          category: "History",
+          score: 0,
+        },
+        {
+          category: "History",
+          score: 66,
+        },
+        {
+          category: "History",
+          score: 0,
+        },
+      ],
+    });
+
+    await userDoc.save();
+  }
 
   if (quiz.length) return;
 
@@ -69,6 +137,11 @@ async function run(): Promise<void> {
     { category: "Sports", num: 21 },
     { category: "History", num: 23 },
   ];
+
+  const userDoc = new UserModel({
+    name: "demouser",
+    password: hashPassword("1234"),
+  });
 
   categoryArr.forEach(async (item) => {
     const fetchRes = await fetch(

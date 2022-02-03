@@ -1,0 +1,30 @@
+#dashboard-content-outer-container {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  min-height: 100vh;
+  background-color: lightgray;
+  padding: 102px 30px 0px 30px;
+
+  #dashboard-content-inner-container {
+    // background-color: yellow;
+    width: 100%;
+    max-width: 1024px;
+    min-width: 300px;
+  }
+
+  #average-score-container {
+    margin: 25px 0;
+    height: calc(100% - 50px);
+    min-height: 200px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    #average-score-inner-container {
+      font-size: 30px;
+      text-align: center;
+    }
+  }
+}

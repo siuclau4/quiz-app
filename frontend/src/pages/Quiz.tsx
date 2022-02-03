@@ -1,6 +1,7 @@
 import { Alert, Radio, RadioChangeEvent, Space } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { AppContext } from "../App";
 import "./Quiz.scss";
 
 interface IQuiz {
@@ -21,15 +22,24 @@ const Quiz = () => {
 
   const [errMsg, setErrMsg] = useState<string>("");
 
+  const [startTime, setStartTime] = useState<Date>(new Date());
+  const [endTime, setEndTime] = useState<Date>(new Date());
+
+  const { state, dispatch } = useContext(AppContext);
+
   useEffect(() => {
     getQuiz();
   }, []);
 
   useEffect(() => {
     if (category && selectedAns && currQuizQuestion === 3) {
-      getScore(category, selectedAns);
+      getScore(category, selectedAns, state.token);
     }
   }, [currQuizQuestion]);
+
+  useEffect(() => {
+    setStartTime(new Date());
+  }, [quiz]);
 
   async function getQuiz() {
     try {
@@ -54,15 +64,25 @@ const Quiz = () => {
     }
   }
 
-  async function getScore(category: string, selectedAns: string[]) {
+  async function getScore(
+    category: string,
+    selectedAns: string[],
+    token: string | null
+  ) {
+    const headers: HeadersInit = token
+      ? {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+
     const fetchRes = await fetch(process.env.REACT_APP_BACKEND_URL + "/check", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         category,
-
         ans: selectedAns,
       }),
     });
@@ -70,6 +90,8 @@ const Quiz = () => {
     const res = await fetchRes.json();
 
     setScore(res.score);
+
+    setEndTime(new Date());
   }
 
   function ansOnchange(e: RadioChangeEvent): void {
@@ -107,9 +129,21 @@ const Quiz = () => {
         )}
         {currQuizQuestion === 3 && (
           <div id="quiz-inner-container">
-            <div>Your Score: {score}</div>
-            <br></br>
-            <Link to="/">Back to Home</Link>
+            <Space direction="vertical">
+              <div
+                id="quiz-pass-fail-container"
+                style={{ color: score && score >= 50 ? "green" : "red" }}
+              >
+                {score && score >= 50 ? "Pass" : "Fail"}
+              </div>
+              <div>Your Score: {score}</div>
+
+              <div>
+                Time used: {(endTime.getTime() - startTime.getTime()) / 1000} s
+              </div>
+
+              <Link to="/">Back to Home</Link>
+            </Space>
           </div>
         )}
       </div>

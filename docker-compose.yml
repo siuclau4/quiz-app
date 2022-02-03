@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  react-app:
+    image: react-app
+    stdin_open: true
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    ports:
+      - 3000:3000
+
+  api-server:
+    container_name: api-server
+    image: api-server
+    restart: always
+    environment:
+      - DB_HOST=mongo
+      - DB_PORT=27017
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    depends_on:
+      - mongo
+    ports:
+      - 8080:8080
+
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    ports:
+      - 27017:27017
